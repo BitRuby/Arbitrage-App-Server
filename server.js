@@ -240,12 +240,12 @@ app.route('/api/coinbase/summary/:c1/:c2').get((req, res) => {
             Request.get( {url:`https://api.pro.coinbase.com/products/${c2}-${c1}/stats?level=2`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
                 if(error) {
                     callback(error, null);
-                    return console.dir("Error: First request: " + error);
+                    return console.dir("Coinbase summary:: First request: " + error);
                 }
                 body = JSON.parse(body);
                 if(body.message) {
                     callback(body.message, null);
-                    return console.dir("Error: First request: " + error);
+                    return console.dir("Coinbase summary:: First request: " + error);
                 }
                 stats.open = body.open;
                 stats.high = body.high;
@@ -257,12 +257,12 @@ app.route('/api/coinbase/summary/:c1/:c2').get((req, res) => {
             Request.get( {url:`https://api.pro.coinbase.com/products/${c2}-${c1}/ticker?level=2`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
                 if(error) {
                     callback(error, null);
-                    return console.dir('Coinbase summary: ' + error);  
+                    return console.dir('Coinbase summary:: Second request: ' + error);  
                 }
                 body = JSON.parse(body);
                 if(body.message) {
                     callback(body, null);
-                    return console.dir('Coinbase summary: ' + body.message);
+                    return console.dir('Coinbase summary:: Second request: ' + body.message);
                 }
                 callback(null, body);
             });

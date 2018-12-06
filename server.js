@@ -1,5 +1,6 @@
 const express = require('express');
 const Request = require('request');
+const async = require('async');
 const objectMapper = require('object-mapper');
 
 Request.defaults({
@@ -182,7 +183,7 @@ app.route('/api/kraken/orderbook/:c1/:c2').get((req, res) => {
             res.send(body);
             return console.dir('Kraken summary: ' + body.error);
         }
-        var dest = objectMapper(JSON.parse(body), map_kraken_1);
+        var dest = objectMapper(body, map_kraken_1);
         var dest2 = objectMapper(dest, map_kraken_2);   
         res.send(dest2);
     });
@@ -233,40 +234,50 @@ app.route('/api/bitfinex/summary/:c1/:c2').get((req, res) => {
 app.route('/api/coinbase/summary/:c1/:c2').get((req, res) => {
     const c1 = req.params.c1.toUpperCase(); 
     const c2 = req.params.c2.toUpperCase();
-    const stats = {};
-    Request.get( {url:`https://api.pro.coinbase.com/products/${c2}-${c1}/stats?level=2`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
-        if(error) {
-            res.send(error);
-            return console.dir('Coinbase summary: ' + error);  
+    async.parallel([
+        function (callback) {
+            const stats = {};
+            Request.get( {url:`https://api.pro.coinbase.com/products/${c2}-${c1}/stats?level=2`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
+                if(error) {
+                    callback(error, null);
+                    return console.dir("Error: First request: " + error);
+                }
+                body = JSON.parse(body);
+                if(body.message) {
+                    callback(body.message, null);
+                    return console.dir("Error: First request: " + error);
+                }
+                stats.open = body.open;
+                stats.high = body.high;
+                stats.low = body.low;
+                callback(null, stats);
+            });
+        },
+        function (callback) {
+            Request.get( {url:`https://api.pro.coinbase.com/products/${c2}-${c1}/ticker?level=2`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
+                if(error) {
+                    callback(error, null);
+                    return console.dir('Coinbase summary: ' + error);  
+                }
+                body = JSON.parse(body);
+                if(body.message) {
+                    callback(body, null);
+                    return console.dir('Coinbase summary: ' + body.message);
+                }
+                callback(null, body);
+            });
+        }],
+        function (err, result) {
+            var dest = objectMapper(result[1], map_coinbase_summary);
+            dest.exchangeName = 'Coinbase';
+            dest.exchangeCurrency1 = String(c1);
+            dest.exchangeCurrency2 = String(c2);
+            dest.highPrice = result[0].high;
+            dest.lowPrice = result[0].low;
+            dest.percentageChange = ((dest.lastPrice-result[0].open)/result[0].open);
+            res.send(dest);
         }
-        body = JSON.parse(body);
-        if(body.message) {
-            res.send(body);
-            return console.dir('Coinbase summary: ' + body.message);
-        }
-        stats.open = body.open;
-        stats.high = body.high;
-        stats.low = body.low;
-    });
-    Request.get( {url:`https://api.pro.coinbase.com/products/${c2}-${c1}/ticker?level=2`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
-        if(error) {
-            res.send(error);
-            return console.dir('Coinbase summary: ' + error);  
-        }
-        body = JSON.parse(body);
-        if(body.message) {
-            res.send(body);
-            return console.dir('Coinbase summary: ' + body.message);
-        }
-        var dest = objectMapper(body, map_coinbase_summary);
-        dest.exchangeName = 'Coinbase';
-        dest.exchangeCurrency1 = String(c1);
-        dest.exchangeCurrency2 = String(c2);
-        dest.highPrice = stats.high;
-        dest.lowPrice = stats.low;
-        dest.percentageChange = ((dest.lastPrice-stats.open)/stats.open);
-        res.send(dest);
-    });
+    );
 });
 app.route('/api/kraken/summary/:c1/:c2').get((req, res) => {
     const c1 = req.params.c1.toUpperCase(); 

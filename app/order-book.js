@@ -44,14 +44,33 @@ exports.init = function(app) {
         "Asks[].data[1]":"Asks[].Quantity",
         "Asks[].data[0]":"Asks[].Price"
     }
-
+    const map_binance_1 = {
+        "bids[]": "Bids[].data",
+        "asks[]": "Asks[].data"
+    }
+    const map_binance_2 = {
+        "Bids[].data[1]":"Bids[].Quantity",
+        "Bids[].data[0]":"Bids[].Price",
+        "Asks[].data[1]":"Asks[].Quantity",
+        "Asks[].data[0]":"Asks[].Price"
+    }
+    const map_p2pb2b_1 = {
+        "bids[]": "Bids[].data",
+        "asks[]": "Asks[].data"
+    }
+    const map_p2pb2b_2 = {
+        "Bids[].data[1]":"Bids[].Quantity",
+        "Bids[].data[0]":"Bids[].Price",
+        "Asks[].data[1]":"Asks[].Quantity",
+        "Asks[].data[0]":"Asks[].Price"
+    }
     app.route('/api/bittrex/orderbook/:c1/:c2').get((req, res) => {
         const c1 = req.params.c1.toUpperCase(); 
         const c2 = req.params.c2.toUpperCase();
         Request.get(`https://bittrex.com/api/v1.1/public/getorderbook?market=${c2}-${c1}&type=both`, (error, response, body) => {
             if(error) {
                 res.send(error);
-                return console.dir('Bittrex summary: ' + error);  
+                return console.dir('Bittrex orderbook: ' + error);  
             }
             body = JSON.parse(body);
             if(body.success==false) {
@@ -85,12 +104,12 @@ exports.init = function(app) {
         Request.get( {url:`https://api.pro.coinbase.com/products/${c1}-${c2}/book?level=2`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
             if(error) {
                 res.send(error);
-                return console.dir('Coinbase summary: ' + error);  
+                return console.dir('Coinbase orderbook: ' + error);  
             }
             body = JSON.parse(body);
             if(body.message) {
                 res.send(body);
-                return console.dir('Coinbase summary: ' + body.message);
+                return console.dir('Coinbase orderbook: ' + body.message);
             }
             var dest = objectMapper(body, map_coinbase_1);
             var dest2 = objectMapper(dest, map_coinbase_2);   
@@ -103,15 +122,51 @@ exports.init = function(app) {
         Request.get( {url:`https://api.kraken.com/0/public/Depth?pair=${c1}${c2}&count=100`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
             if(error) {
                 res.send(error);
-                return console.dir('Kraken summary: ' + error);  
+                return console.dir('Kraken orderbook: ' + error);  
             }
             body = JSON.parse(body);
             if(body.error.length>0) {
                 res.send(body);
-                return console.dir('Kraken summary: ' + body.error);
+                return console.dir('Kraken orderbook: ' + body.error);
             }
             var dest = objectMapper(body, map_kraken_1);
             var dest2 = objectMapper(dest, map_kraken_2);   
+            res.send(dest2);
+        });
+    });
+    app.route('/api/binance/orderbook/:c1/:c2').get((req, res) => {
+        const c1 = req.params.c1.toUpperCase(); 
+        const c2 = req.params.c2.toUpperCase();
+        Request.get( {url:`https://api.binance.com/api/v1/depth?symbol=${c2}${c1}`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
+            if(error) {
+                res.send(error);
+                return console.dir('Binance orderbook: ' + error);  
+            }
+            body = JSON.parse(body);
+            if(body.code != undefined) {
+                res.send(body);
+                return console.dir('Binance orderbook: ' + body.msg);
+            }
+            var dest = objectMapper(body, map_binance_1);
+            var dest2 = objectMapper(dest, map_binance_2);
+            res.send(dest2);
+        });
+    });
+    app.route('/api/p2pb2b/orderbook/:c1/:c2').get((req, res) => {
+        const c1 = req.params.c1.toUpperCase(); 
+        const c2 = req.params.c2.toUpperCase();
+        Request.get( {url:`https://p2pb2b.io/api/v1/public/depth/result?market=${c1}_${c2}`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
+            if(error) {
+                res.send(error);
+                return console.dir('P2PB2B orderbook: ' + error);  
+            }
+            body = JSON.parse(body);
+            if(body.success==false) {
+                res.send(body);
+                return console.dir('P2PB2B orderbook: ' + body.message);
+            }
+            var dest = objectMapper(body, map_p2pb2b_1);
+            var dest2 = objectMapper(dest, map_p2pb2b_2);
             res.send(dest2);
         });
     });

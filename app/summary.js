@@ -62,6 +62,30 @@ exports.init = function(app) {
         "data.h[1]": "highPrice",
         "data.o": "percentageChange"
     }
+    const map_binance = {
+        null: "exchangeName",
+        null: "exchangeCurrency1",
+        null: "exchangeCurrency2",
+        "lastPrice": "lastPrice",
+        "bidPrice": "bid",
+        "askPrice": "ask",
+        "volume": "volume",
+        "lowPrice": "lowPrice",
+        "highPrice": "highPrice",
+        "priceChange": "percentageChange"
+    }
+    const map_p2pb2b = {
+        null: "exchangeName",
+        null: "exchangeCurrency1",
+        null: "exchangeCurrency2",
+        "result.last": "lastPrice",
+        "result.bid": "bid",
+        "result.ask": "ask",
+        "result.volume": "volume",
+        "result.low": "lowPrice",
+        "result.high": "highPrice",
+        "result.open": "percentageChange"
+    }
 
     app.route('/api/bittrex/summary/:c1/:c2').get((req, res) => {
         const c1 = req.params.c1.toUpperCase();  
@@ -174,6 +198,47 @@ exports.init = function(app) {
             dest2.exchangeCurrency2 = String(c2);
             dest2.percentageChange = ((dest2.lastPrice-dest2.percentageChange)/dest2.percentageChange);
             res.send(dest2);
+        });
+    });
+    app.route('/api/binance/summary/:c1/:c2').get((req, res) => {
+        const c1 = req.params.c1.toUpperCase(); 
+        const c2 = req.params.c2.toUpperCase();
+        Request.get( {url:`https://api.binance.com/api/v1/ticker/24hr?symbol=${c1}${c2}`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
+            if(error) {
+                res.send(error);
+                return console.dir('Binance summary: ' + error);  
+            }
+            body = JSON.parse(body);
+            if(body.code != undefined) {
+                res.send(body);
+                return console.dir('Binance orderbook: ' + body.msg);
+            }
+            var dest = objectMapper(body, map_binance);
+            dest.exchangeName = 'Binance';
+            dest.exchangeCurrency1 = String(c1);
+            dest.exchangeCurrency2 = String(c2);
+            res.send(dest);
+        });
+    });
+    app.route('/api/p2pb2b/summary/:c1/:c2').get((req, res) => {
+        const c1 = req.params.c1.toUpperCase(); 
+        const c2 = req.params.c2.toUpperCase();
+        Request.get( {url:`https://p2pb2b.io/api/v1/public/ticker?market=${c2}_${c1}`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
+            if(error) {
+                res.send(error);
+                return console.dir('P2PB2B summary: ' + error);  
+            }
+            body = JSON.parse(body);
+            if(body.success==false) {
+                res.send(body);
+                return console.dir('P2PB2B summary: ' + body.message);
+            }
+            var dest = objectMapper(body, map_p2pb2b);
+            dest.exchangeName = 'P2PB2B';
+            dest.exchangeCurrency1 = String(c1);
+            dest.exchangeCurrency2 = String(c2);
+            dest.percentageChange = ((dest.lastPrice-dest.percentageChange)/dest.percentageChange);
+            res.send(dest);
         });
     });
 }

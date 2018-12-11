@@ -3,6 +3,7 @@ const Request = require('request');
 const orderBook = require('./app/order-book.js');
 const summary = require('./app/summary.js');
 const exchange = require('./app/exchange.js');
+const account = require('./app/account.js');
 Request.defaults({
     headers: {'User-Agent': 'ua'}
 });
@@ -20,3 +21,4 @@ app.use(function(req, res, next) {
 orderBook.init(app);
 summary.init(app);
 exchange.init(app);
+account.init(app);

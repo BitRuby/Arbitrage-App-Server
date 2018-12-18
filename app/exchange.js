@@ -15,6 +15,8 @@ exports.init = function(app) {
         break; 
             case '6': data = {'name': 'P2PB2B'};
         break; 
+            case '7': data = {'name': 'HitBTC'};
+        break; 
             default: data = {'error': 'Invalid identificator.'};
         break;
         }
@@ -35,6 +37,8 @@ exports.init = function(app) {
             case '5': data = {'buyFee': 0.1, 'sellFee': 0.1};
         break; 
             case '6': data = {'buyFee': 0.2, 'sellFee': 0.2};
+        break; 
+            case '7': data = {'buyFee': 0.1, 'sellFee': 0.1};
         break; 
             default: data = {'error': 'Invalid identificator.'};
         break;

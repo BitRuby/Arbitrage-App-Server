@@ -1,6 +1,7 @@
 const Request = require('request');
 const async = require('async');
 const objectMapper = require('object-mapper');
+const tools = require('./tools.js');
 
 exports.init = function(app) {
     const map_bittrex_summary = {
@@ -86,7 +87,18 @@ exports.init = function(app) {
         "result.high": "highPrice",
         "result.open": "percentageChange"
     }
-
+    const map_hitbtc = {
+        null: "exchangeName",
+        null: "exchangeCurrency1",
+        null: "exchangeCurrency2",
+        "last": "lastPrice",
+        "bid": "bid",
+        "ask": "ask",
+        "volume": "volume",
+        "low": "lowPrice",
+        "high": "highPrice",
+        "open": "percentageChange"
+    }
     app.route('/api/bittrex/summary/:c1/:c2').get((req, res) => {
         const c1 = req.params.c1.toUpperCase();  
         const c2 = req.params.c2.toUpperCase();
@@ -209,9 +221,9 @@ exports.init = function(app) {
                 return console.dir('Binance summary: ' + error);  
             }
             body = JSON.parse(body);
-            if(body.code != undefined) {
+            if(body.msg.length > 0) {
                 res.send(body);
-                return console.dir('Binance orderbook: ' + body.msg);
+                return console.dir('Binance summary: ' + body.msg);
             }
             var dest = objectMapper(body, map_binance);
             dest.exchangeName = 'Binance';
@@ -231,10 +243,31 @@ exports.init = function(app) {
             body = JSON.parse(body);
             if(body.success==false) {
                 res.send(body);
-                return console.dir('P2PB2B summary: ' + body.message);
+                return console.dir('P2PB2B summary: ' + body.message.market);
             }
             var dest = objectMapper(body, map_p2pb2b);
             dest.exchangeName = 'P2PB2B';
+            dest.exchangeCurrency1 = String(c1);
+            dest.exchangeCurrency2 = String(c2);
+            dest.percentageChange = ((dest.lastPrice-dest.percentageChange)/dest.percentageChange);
+            res.send(dest);
+        });
+    });
+    app.route('/api/hitbtc/summary/:c1/:c2').get((req, res) => {
+        const c1 = req.params.c1.toUpperCase(); 
+        const c2 = req.params.c2.toUpperCase();
+        Request.get( {url:`https://api.hitbtc.com/api/2/public/ticker/${c2}${c1}`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
+            if(error) {
+                res.send(error);
+                return console.dir('HitBTC summary: ' + error);  
+            }
+            body = JSON.parse(body);
+            if(tools.isEmpty(body.error)===false) {
+                res.send(body);
+                return console.dir('HitBTC summary: ' + body.error.message);
+            }
+            var dest = objectMapper(body, map_hitbtc);
+            dest.exchangeName = 'HitBTC';
             dest.exchangeCurrency1 = String(c1);
             dest.exchangeCurrency2 = String(c2);
             dest.percentageChange = ((dest.lastPrice-dest.percentageChange)/dest.percentageChange);

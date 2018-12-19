@@ -1,4 +1,5 @@
 const exchanges = require('./data/exchanges.json');
+const markets = require('./data/markets.json');
 
 exports.init = function(app) {
     app.route('/api/exchange/:id').get((req, res) => {

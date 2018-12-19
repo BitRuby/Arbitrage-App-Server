@@ -3,42 +3,66 @@
         {
             "id": 1,
             "primary": "USDT",
-            "secondary": "BTC"
+            "secondary": "BTC",
+            "supported_exchanges": [
+                1, 2, 3, 4
+            ]
         },
         {
             "id": 2,
             "primary": "USDT",
-            "secondary": "ETH"
+            "secondary": "ETH",
+            "supported_exchanges": [
+                1, 2, 3, 4
+            ]
         },
         {
             "id": 3,
             "primary": "USDT",
-            "secondary": "LTC"
+            "secondary": "LTC",
+            "supported_exchanges": [
+                1, 2, 3, 4
+            ]
         },
         {
             "id": 4,
             "primary": "USDT",
-            "secondary": "XRP"
+            "secondary": "XRP",
+            "supported_exchanges": [
+                1, 2, 3, 4
+            ]
         },
         {
             "id": 5,
             "primary": "USDT",
-            "secondary": "ZEC"
+            "secondary": "ZEC",
+            "supported_exchanges": [
+                1, 2, 3, 4
+            ]
         },
         {
             "id": 6,
             "primary": "USDT",
-            "secondary": "ADA"
+            "secondary": "ADA",
+            "supported_exchanges": [
+                1, 2, 3, 4
+            ]
         },
         {
             "id": 7,
             "primary": "USDT",
-            "secondary": "BCH"
+            "secondary": "BCH",
+            "supported_exchanges": [
+                1, 2, 3, 4
+            ]
         },
         {
             "id": 8,
             "primary": "USDT",
-            "secondary": "XMR"
+            "secondary": "XMR",
+            "supported_exchanges": [
+                1, 2, 3, 4
+            ]
         }
     ]
 }

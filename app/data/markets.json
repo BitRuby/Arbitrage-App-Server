@@ -1,0 +1,44 @@
+{
+    "Markets": [
+        {
+            "id": 1,
+            "primary": "USDT",
+            "secondary": "BTC"
+        },
+        {
+            "id": 2,
+            "primary": "USDT",
+            "secondary": "ETH"
+        },
+        {
+            "id": 3,
+            "primary": "USDT",
+            "secondary": "LTC"
+        },
+        {
+            "id": 4,
+            "primary": "USDT",
+            "secondary": "XRP"
+        },
+        {
+            "id": 5,
+            "primary": "USDT",
+            "secondary": "ZEC"
+        },
+        {
+            "id": 6,
+            "primary": "USDT",
+            "secondary": "ADA"
+        },
+        {
+            "id": 7,
+            "primary": "USDT",
+            "secondary": "BCH"
+        },
+        {
+            "id": 8,
+            "primary": "USDT",
+            "secondary": "XMR"
+        }
+    ]
+}

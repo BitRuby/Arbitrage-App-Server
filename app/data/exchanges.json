@@ -1,0 +1,44 @@
+{
+    "Exchanges": [
+        {
+            "id": 1,
+            "name": "Bittrex",
+            "supported_markets":
+                [
+                    1, 2, 3, 4, 5, 6, 7, 8
+                ],
+            "buyFee": 0.25, 
+            "sellFee": 0.25
+        },
+        {
+            "id": 2,
+            "name": "Binance",
+            "supported_markets":
+                [
+                    1, 2, 3, 4, 5, 6, 7, 8
+                ],
+            "buyFee": 0.1, 
+            "sellFee": 0.1
+        },
+        {
+            "id": 3,
+            "name": "HitBTC",
+            "supported_markets":
+                [
+                    1, 2, 3, 4, 5, 6, 7, 8
+                ],
+            "buyFee": 0.1, 
+            "sellFee": 0.1
+        },
+        {
+            "id": 4,
+            "name": "OKEx",
+            "supported_markets":
+                [
+                    1, 2, 3, 4, 5, 6, 7, 8
+                ],
+            "buyFee": 0.15, 
+            "sellFee": 0.15
+        }
+    ]
+}

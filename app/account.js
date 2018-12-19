@@ -1,6 +1,9 @@
 const Request = require('request');
+const CryptoJS  = require('crypto-js');
+const hmac_sha256 = require('crypto-js/hmac-sha256');
 const hmac_sha512 = require('crypto-js/hmac-sha512');
 const crypto = require('crypto');
+const moment = require('moment');
 
 exports.init = function(app) {
     app.route('/api/bittrex/connect/:apiKey/:apiSecret').get((req, res) => {
@@ -208,6 +211,39 @@ exports.init = function(app) {
                 else {
                     res.send(body);
                 }
+            }
+        );
+    });
+    app.route('/api/okex/connect/:apiKey/:apiSecret').get((req, res) => {
+        const apiKey = req.params.apiKey;
+        const apiSecret = req.params.apiSecret;
+        const passphrase = '7q4yqYfB68EG8BS';
+        const method = 'GET';
+        const url = `https://okex.com`;
+        const path = `/api/account/v3/wallet`;
+        let nonce = moment().toISOString();
+        const body = {
+
+        }
+        const sign = CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(nonce + method + path, apiSecret))
+        const options = {
+            url: `${url}${path}`,
+            headers: {
+                'OK-ACCESS-KEY': apiKey,
+                'OK-ACCESS-SIGN': sign,
+                'OK-ACCESS-TIMESTAMP': nonce,
+                'OK-ACCESS-PASSPHRASE': passphrase,
+            }
+        }
+        Request.get(
+            options,
+            function(error, response, body) {
+                if(error) {
+                    res.send(error);
+                    return console.dir('OKEX private API connect: ' + error);  
+                }
+                body = JSON.parse(body);
+                res.send(body);
             }
         );
     });

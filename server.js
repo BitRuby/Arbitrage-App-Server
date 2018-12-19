@@ -4,6 +4,7 @@ const session = require('./app/session.js');
 const orderBook = require('./app/order-book.js');
 const summary = require('./app/summary.js');
 const exchange = require('./app/exchange.js');
+const market = require('./app/market.js');
 const account = require('./app/account.js');
 Request.defaults({
     headers: {
@@ -26,4 +27,5 @@ session.init(app);
 orderBook.init(app);
 summary.init(app);
 exchange.init(app);
+market.init(app);
 account.init(app);

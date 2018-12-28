@@ -1,49 +1,14 @@
 const objectMapper = require('object-mapper');
-const Request = require('request');
-const tools = require('./tools.js');
-
+const markets = require('./data/markets.json');
+const markets_export = require('./data/markets_export.json');
+const exchanges = require('./data/exchanges.json');
+const rp = require('request-promise');
 exports.init = function(app) { 
     const map_bittrex = {
         "result.buy[].Quantity":"Bids[].Quantity",
         "result.buy[].Rate":"Bids[].Price",
         "result.sell[].Quantity":"Asks[].Quantity",
         "result.sell[].Rate":"Asks[].Price"
-    }
-    const map_bitfinex = {
-        "bids[].amount":"Bids[].Quantity",
-        "bids[].price":"Bids[].Price",
-        "asks[].amount":"Asks[].Quantity",
-        "asks[].price":"Asks[].Price"
-    }
-    const map_coinbase_1 = {
-        "bids[]":"Bids[].data",
-        "asks[]":"Asks[].data"
-    }
-    const map_coinbase_2 = {
-        "Bids[].data[1]":"Bids[].Quantity",
-        "Bids[].data[0]":"Bids[].Price",
-        "Asks[].data[1]":"Asks[].Quantity",
-        "Asks[].data[0]":"Asks[].Price"
-    }
-    const map_kraken_1 = {
-        "result.XETHZUSD.bids[]":"Bids[].data",
-        "result.XLTCZUSD.bids[]":"Bids[].data",
-        "result.ADAUSD.bids[]":"Bids[].data",
-        "result.USDTZUSD.bids[]":"Bids[].data",
-        "result.XXRPZUSD.bids[]":"Bids[].data",
-        "result.XZECZUSD.bids[]":"Bids[].data",
-        "result.XETHZUSD.asks[]":"Asks[].data",
-        "result.XLTCZUSD.asks[]":"Asks[].data",
-        "result.ADAUSD.asks[]":"Asks[].data",
-        "result.USDTZUSD.asks[]":"Asks[].data",
-        "result.XXRPZUSD.asks[]":"Asks[].data",
-        "result.XZECZUSD.asks[]":"Asks[].data",
-    }
-    const map_kraken_2 = {
-        "Bids[].data[1]":"Bids[].Quantity",
-        "Bids[].data[0]":"Bids[].Price",
-        "Asks[].data[1]":"Asks[].Quantity",
-        "Asks[].data[0]":"Asks[].Price"
     }
     const map_binance_1 = {
         "bids[]": "Bids[].data",
@@ -55,143 +20,123 @@ exports.init = function(app) {
         "Asks[].data[1]":"Asks[].Quantity",
         "Asks[].data[0]":"Asks[].Price"
     }
-    const map_p2pb2b_1 = {
-        "bids[]": "Bids[].data",
-        "asks[]": "Asks[].data"
-    }
-    const map_p2pb2b_2 = {
-        "Bids[].data[1]":"Bids[].Quantity",
-        "Bids[].data[0]":"Bids[].Price",
-        "Asks[].data[1]":"Asks[].Quantity",
-        "Asks[].data[0]":"Asks[].Price"
-    }
     const map_hitbtc = {
         "bid[].size":"Bids[].Quantity",
         "bid[].price":"Bids[].Price",
         "ask[].size":"Asks[].Quantity",
         "ask[].price":"Asks[].Price"
     }
-    app.route('/api/bittrex/orderbook/:c1/:c2').get((req, res) => {
-        const c1 = req.params.c1.toUpperCase(); 
-        const c2 = req.params.c2.toUpperCase();
-        Request.get(`https://bittrex.com/api/v1.1/public/getorderbook?market=${c2}-${c1}&type=both`, (error, response, body) => {
-            if(error) {
-                res.send(error);
-                return console.dir('Bittrex orderbook: ' + error);  
+    const map_okex_1 = {
+        "bids[]": "Bids[].data",
+        "asks[]": "Asks[].data"
+    }
+    const map_okex_2 = {
+        "Bids[].data[1]":"Bids[].Quantity",
+        "Bids[].data[0]":"Bids[].Price",
+        "Asks[].data[1]":"Asks[].Quantity",
+        "Asks[].data[0]":"Asks[].Price"
+    }
+    const getOrderBook = function(exchangeId, currency1, currency2) {
+        let c1 = currency1.toUpperCase(); 
+        let c2 = currency2.toUpperCase();
+        if (exchangeId == 3) { 
+            if (c1 === 'USDT' && c2 === 'XRP') {
+                c1 = 'USDT';
             }
-            body = JSON.parse(body);
-            if(body.success==false) {
-                res.send(body);
-                return console.dir('Bittrex orderbook: ' + body.message);
+            else {
+                c1 = 'USD'; 
             }
-            var dest = objectMapper(body, map_bittrex);
-            res.send(dest);
-        });
-    });
-    app.route('/api/bitfinex/orderbook/:c1/:c2').get((req, res) => {
-        const c1 = req.params.c1.toUpperCase(); 
-        const c2 = req.params.c2.toUpperCase();
-        Request.get(`https://api.bitfinex.com/v1/book/${c1}${c2}?limit_bids=100&limit_asks=100`, (error, response, body) => {
-            if(error) {
-                res.send(error);
-                return console.dir('Bitfinex orderbook' + error);
+        }
+        const id = parseInt(exchangeId);
+        const obj = {};
+        obj.method = 'GET';
+        obj.json = true;
+        obj.headers = {
+            'User-Agent': 'request'
+        }
+        switch (id) {
+            case 1: 
+                obj.uri = `https://bittrex.com/api/v1.1/public/getorderbook?market=${c1}-${c2}&type=both`;
+            break;
+            case 2:
+                obj.uri = `https://api.binance.com/api/v1/depth?symbol=${c2}${c1}`;
+            break;
+            case 3:
+                obj.uri = `https://api.hitbtc.com/api/2/public/orderbook/${c2}${c1}`;
+            break;
+            case 4:
+                obj.uri = `https://www.okex.com/api/spot/v3/instruments/${c2}-${c1}/book?size=100`
+            break;
+        }
+        return obj;
+    }
+    const jsonMapper = function(exchangeId, body) {
+        const id = parseInt(exchangeId);
+        obj = {};
+        switch (id) {
+            case 1: 
+                obj = objectMapper(body, map_bittrex);
+            break;
+            case 2:      
+                obj = objectMapper(objectMapper(body, map_binance_1), map_binance_2);
+            break;
+            case 3:
+                obj = objectMapper(body, map_hitbtc);
+            break;
+            case 4:
+                obj = objectMapper(objectMapper(body, map_okex_1), map_okex_2);
+            break;
+        }
+        return obj;
+    }
+    app.route('/api/orderbook/:marketId').get((req,res) => {
+        const marketId = req.params.marketId; 
+        let json = markets_export;
+        let ps = [];
+        let x = 0;
+        const search = json.Markets.find(item => item.id == marketId);
+        try {
+            if (search === undefined) throw 'Cannot find specified identifier';
+        }
+        catch(err) {
+            console.log('Orderbook by marketId: ' + err);
+            res.send({error: err});
+            return;
+        }
+        ret = [];
+        for ( let j = 0; j < search.exchanges.length; j++ ) {
+            ps.push( rp(getOrderBook(search.exchanges[j], search.primary, search.secondary)) );
+        }
+        Promise.all(ps)
+        .then((results) => {
+            for ( let j = 0; j < search.exchanges.length; j++ ) {
+                ret[j] = {};
+                ret[j].name = exchanges.Exchanges.find(item => item.id == search.exchanges[j]).name;
+                ret[j].data = jsonMapper(search.exchanges[j], results[x++]);
             }
-            body = JSON.parse(body);
-            if(body.message=='Unknown symbol') {
-                res.send(body);
-                return console.dir('Bittrex orderbook: ' + body.message);
+            res.send(ret);
+        }).catch(err => console.log('Orderbook error: ' + err));  
+    })
+    app.route('/api/orderbook').get((req,res) => {
+        let json_data = markets;
+        let ps = [];
+        let x = 0;
+        for ( let i = 0; i < json_data.Markets.length; i++ ) {
+            for ( let j = 0; j < json_data.Markets[i].exchanges.length; j++ ) {
+                ps.push( rp(getOrderBook(json_data.Markets[i].exchanges[j], json_data.Markets[i].primary, json_data.Markets[i].secondary)) );
             }
-            var dest = objectMapper(body, map_bitfinex);
-            res.send(dest);
-        });
-    });
-    app.route('/api/coinbase/orderbook/:c1/:c2').get((req, res) => {
-        const c1 = req.params.c1.toUpperCase(); 
-        const c2 = req.params.c2.toUpperCase();
-        Request.get( {url:`https://api.pro.coinbase.com/products/${c1}-${c2}/book?level=2`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
-            if(error) {
-                res.send(error);
-                return console.dir('Coinbase orderbook: ' + error);  
+        }
+        Promise.all(ps)
+        .then((results) => {
+            for ( let i = 0; i < json_data.Markets.length; i++ ) {
+                json_data.Markets[i].data = [];
+                for ( let j = 0; j < json_data.Markets[i].exchanges.length; j++ ) {
+                    json_data.Markets[i].data[j] = {};
+                    json_data.Markets[i].data[j].name = exchanges.Exchanges.find(item => item.id == json_data.Markets[i].exchanges[j]).name;
+                    json_data.Markets[i].data[j].data = jsonMapper(json_data.Markets[i].exchanges[j], results[x++]);
+                }
             }
-            body = JSON.parse(body);
-            if(tools.isEmpty(body.message)===false) {
-                res.send(body);
-                return console.dir('Coinbase orderbook: ' + body.message);
-            }
-            var dest = objectMapper(body, map_coinbase_1);
-            var dest2 = objectMapper(dest, map_coinbase_2);   
-            res.send(dest2);
-        });
-    });
-    app.route('/api/kraken/orderbook/:c1/:c2').get((req, res) => {
-        const c1 = req.params.c1.toUpperCase(); 
-        const c2 = req.params.c2.toUpperCase();
-        Request.get( {url:`https://api.kraken.com/0/public/Depth?pair=${c1}${c2}&count=100`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
-            if(error) {
-                res.send(error);
-                return console.dir('Kraken orderbook: ' + error);  
-            }
-            body = JSON.parse(body);
-            if(body.error.length>0) {
-                res.send(body);
-                return console.dir('Kraken orderbook: ' + body.error);
-            }
-            var dest = objectMapper(body, map_kraken_1);
-            var dest2 = objectMapper(dest, map_kraken_2);   
-            res.send(dest2);
-        });
-    });
-    app.route('/api/binance/orderbook/:c1/:c2').get((req, res) => {
-        const c1 = req.params.c1.toUpperCase(); 
-        const c2 = req.params.c2.toUpperCase();
-        Request.get( {url:`https://api.binance.com/api/v1/depth?symbol=${c1}${c2}`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
-            if(error) {
-                res.send(error);
-                return console.dir('Binance orderbook: ' + error);  
-            }
-            body = JSON.parse(body);
-            if(body.msg.length > 0) {
-                res.send(body);
-                return console.dir('Binance orderbook: ' + body.msg);
-            }
-            var dest = objectMapper(body, map_binance_1);
-            var dest2 = objectMapper(dest, map_binance_2);
-            res.send(dest2);
-        });
-    });
-    app.route('/api/p2pb2b/orderbook/:c1/:c2').get((req, res) => {
-        const c1 = req.params.c1.toUpperCase(); 
-        const c2 = req.params.c2.toUpperCase();
-        Request.get( {url:`https://p2pb2b.io/api/v1/public/depth/result?market=${c1}_${c2}`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
-            if(error) {
-                res.send(error);
-                return console.dir('P2PB2B orderbook: ' + error);  
-            }
-            body = JSON.parse(body);
-            if(body.success==false) {
-                res.send(body);
-                return console.dir('P2PB2B orderbook: ' + body.message.market);
-            }
-            var dest = objectMapper(body, map_p2pb2b_1);
-            var dest2 = objectMapper(dest, map_p2pb2b_2);
-            res.send(dest2);
-        });
-    });
-    app.route('/api/hitbtc/orderbook/:c1/:c2').get((req, res) => {
-        const c1 = req.params.c1.toUpperCase(); 
-        const c2 = req.params.c2.toUpperCase();
-        Request.get( {url:`https://api.hitbtc.com/api/2/public/orderbook/${c1}${c2}`, headers: {'User-Agent': 'request'}},  (error, response, body) => {
-            if(error) {
-                res.send(error);
-                return console.dir('HitBTC orderbook: ' + error);  
-            }
-            body = JSON.parse(body);
-            if(tools.isEmpty(body.error)===false) {
-                res.send(body);
-                return console.dir('HitBTC orderbook: ' + body.error.message);
-            }
-            var dest = objectMapper(body, map_hitbtc);
-            res.send(dest);
-        });
-    });
+            res.send(json_data);
+        }).catch(err => console.log('Orderbook error: ' + err));  
+    })
 }

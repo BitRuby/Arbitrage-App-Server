@@ -63,6 +63,14 @@
             "exchanges": [
                 1, 3, 4
             ]
+        },
+        {
+            "id": 9,
+            "primary": "USDT",
+            "secondary": "NANO",
+            "exchanges": [
+                3, 4
+            ]
         }
     ]
 }

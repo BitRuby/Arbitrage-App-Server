@@ -1,0 +1,29 @@
+{
+  "name": "arbitrage-app-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/BitRuby/Arbitrage-App-Server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BitRuby/Arbitrage-App-Server/issues"
+  },
+  "homepage": "https://github.com/BitRuby/Arbitrage-App-Server#readme",
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "moment": "^2.23.0",
+    "object-mapper": "^5.0.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2"
+  }
+}

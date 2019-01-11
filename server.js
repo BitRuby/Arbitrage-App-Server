@@ -5,7 +5,7 @@ const orderBook = require('./app/order-book.js');
 const summary = require('./app/summary.js');
 const exchange = require('./app/exchange.js');
 const market = require('./app/market.js');
-const account = require('./app/account.js');
+const user = require('./app/user.js');
 Request.defaults({
     headers: {
         'User-Agent': 'Mozilla/4.0 (compatible; BitArbitrage Application API)',
@@ -29,4 +29,4 @@ orderBook.init(app);
 summary.init(app);
 exchange.init(app);
 market.init(app);
-account.init(app);
+user.init(app);

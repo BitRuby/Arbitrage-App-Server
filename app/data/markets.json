@@ -1,6 +1,5 @@
 {
-    "Markets": [
-        {
+    "Markets": [{
             "id": 1,
             "primary": "USDT",
             "secondary": "BTC",
@@ -53,7 +52,7 @@
             "primary": "USDT",
             "secondary": "BCH",
             "exchanges": [
-                1,4
+                1, 4
             ]
         },
         {

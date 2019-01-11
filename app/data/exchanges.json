@@ -1,27 +1,26 @@
 {
-    "Exchanges": [
-        {
+    "Exchanges": [{
             "id": 1,
             "name": "Bittrex",
-            "buyFee": 0.25, 
+            "buyFee": 0.25,
             "sellFee": 0.25
         },
         {
             "id": 2,
             "name": "Binance",
-            "buyFee": 0.1, 
+            "buyFee": 0.1,
             "sellFee": 0.1
         },
         {
             "id": 3,
             "name": "HitBTC",
-            "buyFee": 0.1, 
+            "buyFee": 0.1,
             "sellFee": 0.1
         },
         {
             "id": 4,
             "name": "OKEx",
-            "buyFee": 0.15, 
+            "buyFee": 0.15,
             "sellFee": 0.15
         }
     ]

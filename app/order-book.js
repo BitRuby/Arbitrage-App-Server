@@ -89,7 +89,7 @@ exports.init = function (app) {
         return obj;
     }
     app.route('/api/orderbook/:marketId').get((req, res) => {
-        const marketId = req.params.marketId;
+        const marketId = req.params.marketId; 
         let json = markets_export;
         let ps = [];
         let x = 0;

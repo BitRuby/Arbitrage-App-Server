@@ -1,5 +1,5 @@
 const account = require('./account');
-const rp = require('request-promise');
+const trade = require('./trade');
 exports.init = function (app) {
     app.route('/api/user/balances/:id').get((req, res) => {
 
@@ -24,5 +24,33 @@ exports.init = function (app) {
             res.send(error);
         });
 
+    });
+
+    app.route('/api/user/trade/sell/:id/:c1/:c2/:quantity/:rate').get((req, res) => {
+        const c1 = req.params.c1;
+        const c2 = req.params.c2;
+        const quantity = parseFloat(req.params.quantity);
+        const rate = parseFloat(req.params.rate);
+        const id = parseInt(req.params.id, 10);
+        const side = 'sell';
+        Promise.resolve(trade.putOrder(id, c1, c2, quantity, rate, side)).then((results) => {
+            res.send(results);
+        }).catch((error) => {
+            res.send(error);
+        });
+    });
+
+    app.route('/api/user/trade/buy/:id/:c1/:c2/:quantity/:rate').get((req, res) => {
+        const c1 = req.params.c1;
+        const c2 = req.params.c2;
+        const quantity = parseFloat(req.params.quantity);
+        const rate = parseFloat(req.params.rate);
+        const id = parseInt(req.params.id, 10);
+        const side = 'buy';
+        Promise.resolve(trade.putOrder(id, c1, c2, quantity, rate, side)).then((results) => {
+            res.send(results);
+        }).catch((error) => {
+            res.send(error);
+        });
     });
 }
